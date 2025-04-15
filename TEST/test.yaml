@@ -1,0 +1,15 @@
+base_url: "https://example.com"  # volontairement cassé
+
+endpoints:
+  - https://jsonplaceholder.typicode.com/posts
+  - https://jsonplaceholder.typicode.com/invalid
+  - https://dog.ceo/api/breed/hound/images
+  - https://dog.ceo/api/breed/doesnotexist/images   # → Erreur
+  - https://restcountries.com/v3.1/all
+  - https://restcountries.com/v3.1/name/france
+  - https://restcountries.com/v3.1/alpha/XYZ         # → Faux code pays
+  - https://api.github.com/users/octocat             # bien protégé (test headers)
+  - https://api.github.com/users/thisuserdoesntexist # → 404
+  - https://httpstat.us/503                          # Simule une erreur 503
+  - https://httpstat.us/200?sleep=5000               # Timeout simulé
+

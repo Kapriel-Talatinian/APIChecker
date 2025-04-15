@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rapport d'Audit API</title>
+  <style>
+    :root {
+      --main-color: #3498db;
+      --success: #2ecc71;
+      --warning: #f39c12;
+      --danger: #e74c3c;
+      --light: #f7f9fc;
+      --dark: #2c3e50;
+      --gray: #ecf0f1;
+    }
+
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: var(--light);
+      color: #333;
+      margin: 0;
+      padding: 2em;
+      line-height: 1.6;
+    }
+
+    h1 {
+      font-size: 2.2em;
+      margin-bottom: 0.5em;
+      color: var(--dark);
+    }
+
+    h2 {
+      margin-top: 1.5em;
+      color: var(--main-color);
+    }
+
+    a {
+      color: var(--main-color);
+      text-decoration: none;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.4em 0.8em;
+      border-radius: 20px;
+      font-size: 0.85em;
+      font-weight: bold;
+      color: white;
+      vertical-align: middle;
+    }
+
+    .badge-green { background-color: var(--success); }
+    .badge-yellow { background-color: var(--warning); }
+    .badge-red { background-color: var(--danger); }
+
+    .card {
+      background: white;
+      border-left: 6px solid var(--main-color);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      padding: 1.5em;
+      margin-bottom: 2em;
+      border-radius: 8px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.01);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1em;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: var(--gray);
+    }
+
+    .recommendation {
+      background-color: #fff8e1;
+      border-left: 5px solid var(--warning);
+      padding: 0.8em 1em;
+      border-radius: 6px;
+      margin-top: 0.5em;
+    }
+
+    .no-reco {
+      color: var(--success);
+      font-weight: bold;
+    }
+
+    .toc {
+      background: white;
+      border: 1px solid var(--gray);
+      padding: 1em;
+      border-radius: 8px;
+      margin-bottom: 2em;
+    }
+
+    .toc ul {
+      padding-left: 1.2em;
+    }
+
+    .toc li {
+      margin-bottom: 0.3em;
+    }
+
+    .endpoint-title {
+      font-size: 1.3em;
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🔍 Rapport d'Audit API</h1>
+
+  <div class="card">
+    <h2>📋 Sommaire</h2>
+    <div class="toc">
+      <ul>
+        {% for e in details %}
+          <li><a href="#endpoint-{{ loop.index }}">{{ e.url }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Résumé global</h2>
+    <p><strong>Nombre d'endpoints testés :</strong> {{ summary.nb_endpoints }}</p>
+    <p><strong>Réponses valides :</strong> {{ summary.success }}</p>
+    <p><strong>Erreurs :</strong> {{ summary.errors }}</p>
+    <p><strong>Temps moyen de réponse :</strong> {{ summary.avg_response_time_ms }} ms</p>
+    <p><strong>Durée totale de l’audit :</strong> {{ summary.audit_duration_s }} sec</p>
+    <p><strong>Score global :</strong>
+      {% if summary.score >= 80 %}
+        <span class="badge badge-green">{{ summary.score }}/100 ✅</span>
+      {% elif summary.score >= 50 %}
+        <span class="badge badge-yellow">{{ summary.score }}/100 ⚠️</span>
+      {% else %}
+        <span class="badge badge-red">{{ summary.score }}/100 ❌</span>
+      {% endif %}
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>💡 Recommandations globales</h2>
+    <ul>
+      {% set all_recos = [] %}
+      {% for e in details %}
+        {% for r in e.recommendations %}
+          {% if r not in all_recos %}
+            {% set _ = all_recos.append(r) %}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+      {% for reco in all_recos %}
+        <li>{{ reco }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  {% for e in details %}
+  <div class="card" id="endpoint-{{ loop.index }}">
+    <h2 class="endpoint-title">📌 {{ e.url }}</h2>
+    <table>
+      <tr><th>Statut HTTP</th><td>{{ e.status_code or 'N/A' }}</td></tr>
+      <tr><th>Temps de réponse</th><td>{{ e.response_time_ms or 'N/A' }} ms</td></tr>
+      <tr><th>Content-Type</th><td>{{ e.content_type }}</td></tr>
+      <tr><th>HTTPS</th><td>{{ 'Oui' if e.is_https else 'Non' }}</td></tr>
+      <tr><th>DNS Résolu</th><td>{{ 'Oui' if e.dns_resolvable else 'Non' }}</td></tr>
+      <tr><th>Headers sécurité complets</th><td>{{ 'Oui' if e.security_headers_ok else 'Non' }}</td></tr>
+      <tr><th>Headers manquants</th><td>{{ e.missing_security_headers | join(', ') }}</td></tr>
+      <tr><th>Clés JSON détectées</th><td>{{ e.json_keys | join(', ') }}</td></tr>
+      <tr><th>Données sensibles trouvées</th><td>{{ e.sensitive_data_found | join(', ') }}</td></tr>
+      <tr><th>Redirection ouverte</th><td>{{ 'Oui' if e.open_redirect_check else 'Non' }}</td></tr>
+      <tr><th>Erreur</th><td>{{ e.error or '—' }}</td></tr>
+      <tr><th>Score</th>
+        <td>
+          {% set score = 0 %}
+          {% if e.status_code and e.status_code < 400 %}{% set score = score + 30 %}{% endif %}
+          {% if e.security_headers_ok %}{% set score = score + 20 %}{% endif %}
+          {% if not e.sensitive_data_found %}{% set score = score + 20 %}{% endif %}
+          {% if e.dns_resolvable %}{% set score = score + 10 %}{% endif %}
+          {% if not e.error %}{% set score = score + 20 %}{% endif %}
+          {% if score >= 80 %}
+            <span class="badge badge-green">{{ score }}/100 ✅</span>
+          {% elif score >= 50 %}
+            <span class="badge badge-yellow">{{ score }}/100 ⚠️</span>
+          {% else %}
+            <span class="badge badge-red">{{ score }}/100 ❌</span>
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+
+    <h3>🔧 Recommandations</h3>
+    {% if e.recommendations %}
+      {% for reco in e.recommendations %}
+        <div class="recommendation">{{ reco }}</div>
+      {% endfor %}
+    {% else %}
+      <p class="no-reco">Aucune recommandation spécifique. ✅</p>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+</body>
+</html>
