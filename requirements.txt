@@ -1,0 +1,28 @@
+# requirements.txt
+
+# --- Core API backend ---
+fastapi==0.110.0
+uvicorn==0.29.0
+httpx==0.27.0
+pydantic==2.6.4
+
+# --- Frontend Streamlit ---
+streamlit==1.44.1
+requests==2.32.3
+
+# --- Template + Export PDF ---
+jinja2==3.1.3
+weasyprint==61.2
+
+# --- Email (en local ou SMTP) ---
+email-validator==2.1.1
+
+# --- YAML Support (optional) ---
+pyyaml==6.0.1
+
+# --- Utilitaires généraux ---
+python-multipart==0.0.9
+typing-extensions==4.11.0
+
+# --- Pour pandas si utilisé dans Streamlit ---
+pandas==2.2.1
