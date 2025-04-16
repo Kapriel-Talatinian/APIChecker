@@ -9,6 +9,23 @@ st.set_page_config(page_title="APIChecker", page_icon="🛠", layout="centered")
 st.title("🔍 APIChecker – Audit & Compliance d’API")
 st.markdown("Scannez votre API et obtenez un rapport sur ses performances, sa sécurité et sa conformité RGPD.")
 
+# --- Message retour paiement ---
+params = st.experimental_get_query_params()
+if "success" in params:
+    st.success("🎉 Paiement confirmé ! Vous pouvez lancer votre audit.")
+elif "canceled" in params:
+    st.warning("🚫 Paiement annulé.")
+
+# --- Paiement Stripe ---
+st.markdown("---")
+st.subheader("💳 Audit complet avec rapport professionnel")
+
+# Lien Stripe Checkout direct (généré dans ton compte Stripe)
+stripe_link = "https://buy.stripe.com/test_9AQ5o848C44O5HifYY"  # Remplace par ton vrai lien Stripe
+
+if st.button("🔐 Payer 9.90€ pour débloquer l'audit"):
+    st.markdown(f"[👉 Cliquez ici pour payer]({stripe_link})", unsafe_allow_html=True)
+
 # --- Formulaire ---
 with st.form("audit_form"):
     st.subheader("🔗 Entrez votre URL d'API")
