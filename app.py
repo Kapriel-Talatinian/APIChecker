@@ -10,7 +10,7 @@ st.title("🔍 APIChecker – Audit & Compliance d’API")
 st.markdown("Scannez votre API et obtenez un rapport sur ses performances, sa sécurité et sa conformité RGPD.")
 
 # --- Message retour paiement ---
-params = st.experimental_get_query_params()
+params = st.query_params
 if "success" in params:
     st.success("🎉 Paiement confirmé ! Vous pouvez lancer votre audit.")
 elif "canceled" in params:
